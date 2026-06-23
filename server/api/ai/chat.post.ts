@@ -1,6 +1,4 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { createLogger } from '~/server/utils/logger'
-
 // ── Request / response types ────────────────────────────────────────────────
 
 interface ToolUseItem {

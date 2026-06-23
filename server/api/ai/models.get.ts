@@ -1,6 +1,4 @@
 import type { AIModel } from '~/types'
-import { createLogger } from '~/server/utils/logger'
-
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 function ollamaSupportsTools(name: string): boolean {
