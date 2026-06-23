@@ -1,5 +1,14 @@
 import type { Timestamp } from 'firebase/firestore'
 
+// ── Hub user directory ──────────────────────────────────────────────────────
+
+export interface HubUser {
+  uid: string
+  displayName: string
+  email: string
+  photoURL: string
+}
+
 // ── Suite cross-app events ──────────────────────────────────────────────────
 
 export type SuiteEventType =

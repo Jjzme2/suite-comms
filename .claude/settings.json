@@ -14,7 +14,19 @@
       "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" add app/app.vue app/pages/auth/callback.vue app/pages/auth/login.vue app/pages/index.vue app/pages/links/index.vue app/pages/my-tasks.vue app/pages/notes/index.vue \"app/pages/projects/[id]/index.vue\" \"app/pages/projects/[id]/links.vue\" \"app/pages/projects/[id]/list.vue\" \"app/pages/projects/[id]/notes.vue\" \"app/pages/projects/[id]/timers.vue\" app/pages/projects/index.vue app/pages/timers/index.vue)",
       "Bash(git -C 'C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm' commit -m ' *)",
       "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" push origin main)",
-      "Bash(pnpm add *)"
+      "Bash(pnpm add *)",
+      "mcp__claude_ai_Vercel__list_projects",
+      "mcp__claude_ai_Vercel__get_project",
+      "mcp__claude_ai_Vercel__get_runtime_logs",
+      "Bash(vercel --version)",
+      "Bash(vercel whoami *)",
+      "mcp__claude_ai_Vercel__web_fetch_vercel_url",
+      "Bash(git -C \"C:/Users/Jjzet/Projects/Suite/comms\" status)",
+      "Bash(git -C \"C:/Users/Jjzet/Projects/Suite\" status)",
+      "Bash(git -C \"C:/Users/Jjzet/Projects/Suite/comms\" log --oneline -3)",
+      "Bash(git -C \"C:/Users/Jjzet/Projects/Suite/comms\" add app/components/AppTopBar.vue)",
+      "Bash(git -C C:/Users/Jjzet/Projects/Suite/comms commit -m ' *)",
+      "Bash(git -C \"C:/Users/Jjzet/Projects/Suite/comms\" push origin main)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Jjzet\\.claude\\projects\\c--Users-Jjzet-Projects-Suite-comms\\memory",

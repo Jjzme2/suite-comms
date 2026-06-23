@@ -32,7 +32,7 @@ const groupLabel: Record<string, string> = {
 </script>
 
 <template>
-  <UDropdownMenu>
+  <UPopover :content="{ side: 'bottom', sideOffset: 8, collisionPadding: 8 }">
     <UButton variant="outline" color="neutral" size="sm" class="gap-2 max-w-48">
       <UIcon
         v-if="selected"
@@ -103,5 +103,5 @@ const groupLabel: Record<string, string> = {
         </div>
       </div>
     </template>
-  </UDropdownMenu>
+  </UPopover>
 </template>
