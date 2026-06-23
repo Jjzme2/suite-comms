@@ -26,11 +26,21 @@ const FALLBACK_MODELS: AIModel[] = [
     contextLength: 200000
   },
   {
+    id: 'gemini:gemini-3.5-flash',
+    name: 'Gemini 3.5 Flash',
+    provider: 'google',
+    hosting: 'cloud',
+    description: 'Most capable Gemini — fastest for agentic and coding tasks',
+    contextLength: 1048576,
+    available: false,
+    unavailableReason: 'GEMINI_API_KEY not set'
+  },
+  {
     id: 'gemini:gemini-2.5-pro',
     name: 'Gemini 2.5 Pro',
     provider: 'google',
     hosting: 'cloud',
-    description: 'Most capable Gemini model',
+    description: 'Advanced reasoning and deep thinking',
     contextLength: 1048576,
     available: false,
     unavailableReason: 'GEMINI_API_KEY not set'
@@ -40,7 +50,17 @@ const FALLBACK_MODELS: AIModel[] = [
     name: 'Gemini 2.5 Flash',
     provider: 'google',
     hosting: 'cloud',
-    description: 'Fast and efficient',
+    description: 'Best price-performance for low-latency tasks',
+    contextLength: 1048576,
+    available: false,
+    unavailableReason: 'GEMINI_API_KEY not set'
+  },
+  {
+    id: 'gemini:gemini-2.5-flash-lite',
+    name: 'Gemini 2.5 Flash Lite',
+    provider: 'google',
+    hosting: 'cloud',
+    description: 'Fastest and most budget-friendly Gemini',
     contextLength: 1048576,
     available: false,
     unavailableReason: 'GEMINI_API_KEY not set'

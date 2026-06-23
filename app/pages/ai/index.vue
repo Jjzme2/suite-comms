@@ -62,6 +62,9 @@ const modelForChat = (modelId: string) => models.value.find(m => m.id === modelI
       </span>
     </div>
 
+    <!-- Local models panel -->
+    <AiLocalModelsPanel class="mb-6" />
+
     <!-- Chat list -->
     <div v-if="chats && chats.length" class="space-y-2">
       <div

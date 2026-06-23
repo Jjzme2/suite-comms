@@ -14,7 +14,7 @@ const titleInput = ref('')
 
 const chat = computed(() => chats.value?.find(c => c.id === chatId.value))
 useSeoMeta({ title: computed(() => chat.value?.title ?? 'AI Chat') })
-const model = computed(() => models.value.find(m => m.id === chat.value?.modelId))
+const model = computed(() => models.value.find(m => m.id === selectedModelId.value))
 const selectedModelId = ref(chat.value?.modelId ?? 'claude-sonnet-4-6')
 
 watch(chat, c => {
@@ -78,10 +78,7 @@ function startEditTitle() {
         <UIcon name="i-lucide-pencil" class="size-3.5 opacity-0 group-hover:opacity-50 shrink-0 transition-opacity" />
       </button>
 
-      <div v-if="model" class="flex items-center gap-1.5 shrink-0">
-        <AiModelBadge :hosting="model.hosting" />
-        <span class="text-xs text-zinc-500 hidden sm:block">{{ model.name }}</span>
-      </div>
+      <AiModelPicker v-model:model-id="selectedModelId" />
     </div>
 
     <!-- Messages -->

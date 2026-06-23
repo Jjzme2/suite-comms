@@ -9,7 +9,28 @@ import {
   serverTimestamp
 } from 'firebase/firestore'
 import { useCollection } from 'vuefire'
-import type { AIChat, AIMessage } from '~/types'
+import type { AIChat, AIMessage, AIToolCall } from '~/types'
+import { toolDisplayLabel } from './useAISuiteTools'
+
+// Types used only for building API call payloads (not stored in Firestore)
+interface ToolChatMessage {
+  role: 'user' | 'assistant'
+  content: string
+  toolUse?: { id: string; name: string; input: Record<string, unknown> }[]
+  toolResults?: { tool_use_id: string; content: string; is_error?: boolean }[]
+}
+
+interface SuiteToolCall {
+  id: string
+  name: string
+  input: Record<string, unknown>
+}
+
+interface ChatApiResponse {
+  content?: string
+  toolCalls?: SuiteToolCall[]
+  partialText?: string
+}
 
 export function useAIChats() {
   const db = useFirestore()
@@ -55,6 +76,8 @@ export function useAIChats() {
 export function useAIChatSession(chatId: MaybeRefOrGetter<string>) {
   const db = useFirestore()
   const user = useCurrentUser()
+  const { markModelUnavailable } = useAIModels()
+  const { executeTool } = useAISuiteTools()
 
   function messagesRef() {
     return collection(
@@ -72,52 +95,94 @@ export function useAIChatSession(chatId: MaybeRefOrGetter<string>) {
   const streaming = ref(false)
   const streamingContent = ref('')
   const error = ref<string | null>(null)
-  const { markModelUnavailable } = useAIModels()
+
+  const isAnthropicModel = (modelId: string) =>
+    !modelId.startsWith('ollama:') &&
+    !modelId.startsWith('lmstudio:') &&
+    !modelId.startsWith('gemini:') &&
+    !modelId.startsWith('openrouter:')
 
   async function sendMessage(userText: string, modelId: string) {
     if (!user.value || !userText.trim()) return
 
     error.value = null
 
-    const userMsg = await addDoc(messagesRef(), {
+    // Persist user message
+    await addDoc(messagesRef(), {
       role: 'user',
       content: userText.trim(),
       createdAt: serverTimestamp()
     })
 
-    const history = (messages.value ?? []).map(m => ({ role: m.role, content: m.content }))
+    // Build simple text history (tool metadata is not carried across sessions)
+    const textHistory: ToolChatMessage[] = (messages.value ?? []).map(m => ({
+      role: m.role,
+      content: m.content
+    }))
 
     streaming.value = true
     streamingContent.value = ''
 
     try {
-      const res = await $fetch<{ content: string }>('/api/ai/chat', {
-        method: 'POST',
-        body: {
-          modelId,
-          messages: [...history, { role: 'user', content: userText.trim() }]
+      let currentMessages: ToolChatMessage[] = [
+        ...textHistory,
+        { role: 'user', content: userText.trim() }
+      ]
+      const allToolCalls: AIToolCall[] = []
+      const MAX_ROUNDS = 6
+
+      for (let round = 0; round < MAX_ROUNDS; round++) {
+        const res = await $fetch<ChatApiResponse>('/api/ai/chat', {
+          method: 'POST',
+          body: { modelId, messages: currentMessages }
+        })
+
+        if (res.toolCalls?.length && isAnthropicModel(modelId)) {
+          // Show per-tool progress in the streaming bubble
+          const labels = res.toolCalls.map(tc => toolDisplayLabel(tc.name)).join(', ')
+          streamingContent.value = `Using: ${labels}…`
+
+          const toolResults: { tool_use_id: string; content: string; is_error?: boolean }[] = []
+
+          for (const tc of res.toolCalls) {
+            const { result, isError } = await executeTool(tc.name, tc.input)
+            allToolCalls.push({ id: tc.id, name: tc.name, input: tc.input, result, isError })
+            toolResults.push({ tool_use_id: tc.id, content: result, ...(isError ? { is_error: true } : {}) })
+          }
+
+          // Append the tool_use assistant turn + tool_result user turn for next call
+          currentMessages = [
+            ...currentMessages,
+            {
+              role: 'assistant',
+              content: res.partialText ?? '',
+              toolUse: res.toolCalls.map(tc => ({ id: tc.id, name: tc.name, input: tc.input }))
+            },
+            { role: 'user', content: '', toolResults }
+          ]
+        } else {
+          // Final text response — persist and break
+          const finalContent = res.content ?? ''
+          streamingContent.value = finalContent
+
+          await addDoc(messagesRef(), {
+            role: 'assistant',
+            content: finalContent,
+            ...(allToolCalls.length ? { toolCalls: allToolCalls } : {}),
+            createdAt: serverTimestamp()
+          })
+
+          const chatRef = doc(db, 'users', user.value!.uid, 'comms_ai_chats', toValue(chatId))
+          const isFirst = (messages.value?.length ?? 0) <= 1
+          const update: Record<string, unknown> = { updatedAt: serverTimestamp() }
+          if (isFirst) update.title = userText.trim().slice(0, 60)
+          await updateDoc(chatRef, update)
+          break
         }
-      })
-
-      streamingContent.value = res.content
-
-      await addDoc(messagesRef(), {
-        role: 'assistant',
-        content: res.content,
-        createdAt: serverTimestamp()
-      })
-
-      const chatRef = doc(db, 'users', user.value.uid, 'comms_ai_chats', toValue(chatId))
-      const isFirst = (messages.value?.length ?? 0) <= 1
-      const update: Record<string, unknown> = { updatedAt: serverTimestamp() }
-      if (isFirst) {
-        update.title = userText.trim().slice(0, 60)
       }
-      await updateDoc(chatRef, update)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed to get AI response'
       error.value = msg
-      // Auto-grey models that report key/token exhaustion errors
       if (msg.includes('not configured') || msg.includes('429') || msg.includes('quota')) {
         markModelUnavailable(modelId, msg)
       }

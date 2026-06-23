@@ -54,6 +54,7 @@ export function useForumThreads(projectId?: MaybeRefOrGetter<string | null>) {
     projectId: string
     title: string
     content: string
+    aiModel?: string
   }) {
     if (!user.value) return
     const ref = await addDoc(threadsRef(), {

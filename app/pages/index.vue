@@ -3,10 +3,27 @@ definePageMeta({ middleware: 'auth' })
 useSeoMeta({ title: 'Home' })
 
 const user = useCurrentUser()
+const router = useRouter()
+const toast = useToast()
 const { conversations } = useConversations()
-const { chats } = useAIChats()
+const { chats, createChat } = useAIChats()
 const { threads } = useForumThreads()
 const { channels } = useChannels()
+
+const dashboardModelId = ref('claude-sonnet-4-6')
+const creatingChat = ref(false)
+
+async function startChat() {
+  creatingChat.value = true
+  try {
+    const id = await createChat(dashboardModelId.value)
+    router.push(`/ai/${id}`)
+  } catch {
+    toast.add({ title: 'Failed to create chat', color: 'error' })
+  } finally {
+    creatingChat.value = false
+  }
+}
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -122,13 +139,12 @@ const totalUnread = computed(() =>
           <span class="text-sm text-zinc-700 dark:text-zinc-300 truncate">{{ chat.title }}</span>
         </NuxtLink>
       </div>
-      <NuxtLink
-        to="/ai"
-        class="flex items-center justify-center gap-2 py-4 text-sm text-zinc-400 hover:text-violet-500 transition-colors"
-      >
-        <UIcon name="i-lucide-plus" class="size-4" />
-        Start a new AI chat
-      </NuxtLink>
+      <div class="flex items-center justify-center gap-2 py-4">
+        <AiModelPicker v-model:model-id="dashboardModelId" />
+        <UButton color="violet" size="sm" icon="i-lucide-plus" :loading="creatingChat" @click="startChat">
+          New Chat
+        </UButton>
+      </div>
     </div>
 
     <!-- Recent forum activity -->

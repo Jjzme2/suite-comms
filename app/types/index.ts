@@ -38,10 +38,19 @@ export interface AIModel {
   unavailableReason?: string
 }
 
+export interface AIToolCall {
+  id: string
+  name: string
+  input: Record<string, unknown>
+  result?: string
+  isError?: boolean
+}
+
 export interface AIMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
+  toolCalls?: AIToolCall[]
   createdAt: Timestamp
 }
 
@@ -139,6 +148,7 @@ export interface ForumThread {
   authorName: string
   pinned: boolean
   replyCount: number
+  aiModel?: string
   createdAt: Timestamp
   updatedAt: Timestamp
 }
