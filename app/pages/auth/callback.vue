@@ -19,6 +19,15 @@ onMounted(async () => {
 
   try {
     await signInWithCustomToken(auth, token)
+    // signInWithCustomToken resolves before Firebase fires onAuthStateChanged,
+    // so VueFire's user ref can still be null when the auth middleware runs on
+    // the next route. Wait for the ref to reflect the signed-in user first.
+    const user = useCurrentUser()
+    if (!user.value) {
+      await new Promise<void>((resolve) => {
+        const stop = watch(user, (val) => { if (val) { stop(); resolve() } }, { immediate: true })
+      })
+    }
     await navigateTo(redirect.startsWith('/') ? redirect : '/')
   } catch (e: any) {
     console.error('SSO callback failed', e)

@@ -3,7 +3,17 @@
     "allow": [
       "Read(//c/Users/Jjzet/Projects/Suite/**)",
       "PowerShell(Get-ChildItem \"c:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\\\\app\\\\types\" | ForEach-Object { Write-Host \"=== $\\($_.Name\\) ===\"; Get-Content $_.FullName })",
-      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" -Force -Name | Where-Object { $_ -match \"npmrc|pnpm\" })"
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" -Force -Name | Where-Object { $_ -match \"npmrc|pnpm\" })",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\hub\" remote -v)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" remote -v)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\hub\" diff --stat)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\hub\" add app/app.vue app/pages/admin.vue app/pages/auth/login.vue app/pages/auth/register.vue app/pages/dashboard.vue app/pages/index.vue app/pages/profile.vue app/pages/sentry-example-page.vue)",
+      "Bash(git -C 'C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\hub' commit -m ' *)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\hub\" push origin main)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" diff --stat)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" add app/app.vue app/pages/auth/callback.vue app/pages/auth/login.vue app/pages/index.vue app/pages/links/index.vue app/pages/my-tasks.vue app/pages/notes/index.vue \"app/pages/projects/[id]/index.vue\" \"app/pages/projects/[id]/links.vue\" \"app/pages/projects/[id]/list.vue\" \"app/pages/projects/[id]/notes.vue\" \"app/pages/projects/[id]/timers.vue\" app/pages/projects/index.vue app/pages/timers/index.vue)",
+      "Bash(git -C 'C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm' commit -m ' *)",
+      "Bash(git -C \"C:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" push origin main)"
     ],
     "additionalDirectories": [
       "c:\\Users\\Jjzet\\.claude\\projects\\c--Users-Jjzet-Projects-Suite-comms\\memory",
