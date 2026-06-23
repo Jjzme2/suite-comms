@@ -11,6 +11,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
+    '@vueuse/nuxt',
     '@pinia/nuxt',
     'nuxt-vuefire'
   ],
