@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineOptions({ name: 'AuthLayout' })
+</script>
+
+<template>
+  <div class="min-h-screen flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+    <slot />
+  </div>
+</template>

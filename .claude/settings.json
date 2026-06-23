@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Jjzet/Projects/Suite/**)",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\\\\app\\\\types\" | ForEach-Object { Write-Host \"=== $\\($_.Name\\) ===\"; Get-Content $_.FullName })",
+      "PowerShell(Get-ChildItem \"c:\\\\Users\\\\Jjzet\\\\Projects\\\\Suite\\\\projects\\\\pm\" -Force -Name | Where-Object { $_ -match \"npmrc|pnpm\" })"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\Jjzet\\.claude\\projects\\c--Users-Jjzet-Projects-Suite-comms\\memory",
+      "C:\\Users\\Jjzet\\Projects\\Suite"
+    ]
+  }
+}
