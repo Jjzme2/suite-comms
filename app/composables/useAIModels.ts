@@ -1,13 +1,16 @@
 import type { AIModel } from '~/types'
 
-const FALLBACK_MODELS: AIModel[] = [
+// Module-level singleton — all component instances share the same reactive state
+const models = ref<AIModel[]>([
   {
     id: 'claude-sonnet-4-6',
     name: 'Claude Sonnet 4.6',
     provider: 'anthropic',
     hosting: 'cloud',
     description: 'Balanced intelligence and speed',
-    contextLength: 200000
+    contextLength: 200000,
+    supportsTools: true,
+    supportsVision: true
   },
   {
     id: 'claude-haiku-4-5-20251001',
@@ -15,7 +18,9 @@ const FALLBACK_MODELS: AIModel[] = [
     provider: 'anthropic',
     hosting: 'cloud',
     description: 'Fast and efficient',
-    contextLength: 200000
+    contextLength: 200000,
+    supportsTools: true,
+    supportsVision: true
   },
   {
     id: 'claude-opus-4-8',
@@ -23,17 +28,9 @@ const FALLBACK_MODELS: AIModel[] = [
     provider: 'anthropic',
     hosting: 'cloud',
     description: 'Most capable Claude model',
-    contextLength: 200000
-  },
-  {
-    id: 'gemini:gemini-3.5-flash',
-    name: 'Gemini 3.5 Flash',
-    provider: 'google',
-    hosting: 'cloud',
-    description: 'Most capable Gemini — fastest for agentic and coding tasks',
-    contextLength: 1048576,
-    available: false,
-    unavailableReason: 'GEMINI_API_KEY not set'
+    contextLength: 200000,
+    supportsTools: true,
+    supportsVision: true
   },
   {
     id: 'gemini:gemini-2.5-pro',
@@ -43,7 +40,9 @@ const FALLBACK_MODELS: AIModel[] = [
     description: 'Advanced reasoning and deep thinking',
     contextLength: 1048576,
     available: false,
-    unavailableReason: 'GEMINI_API_KEY not set'
+    unavailableReason: 'GEMINI_API_KEY not set',
+    supportsTools: true,
+    supportsVision: true
   },
   {
     id: 'gemini:gemini-2.5-flash',
@@ -53,34 +52,25 @@ const FALLBACK_MODELS: AIModel[] = [
     description: 'Best price-performance for low-latency tasks',
     contextLength: 1048576,
     available: false,
-    unavailableReason: 'GEMINI_API_KEY not set'
-  },
-  {
-    id: 'gemini:gemini-2.5-flash-lite',
-    name: 'Gemini 2.5 Flash Lite',
-    provider: 'google',
-    hosting: 'cloud',
-    description: 'Fastest and most budget-friendly Gemini',
-    contextLength: 1048576,
-    available: false,
-    unavailableReason: 'GEMINI_API_KEY not set'
+    unavailableReason: 'GEMINI_API_KEY not set',
+    supportsTools: true,
+    supportsVision: true
   }
-]
+])
 
-// Runtime unavailability — keyed by model ID, persists for the page session
+const loading = ref(false)
+
+// Runtime unavailability — persists for the page session
 const runtimeUnavailable = reactive<Record<string, string>>({})
 
 export function useAIModels() {
-  const models = ref<AIModel[]>(FALLBACK_MODELS)
-  const loading = ref(false)
-
   async function fetchModels() {
     loading.value = true
     try {
       const discovered = await $fetch<AIModel[]>('/api/ai/models')
       models.value = discovered
     } catch {
-      models.value = FALLBACK_MODELS
+      // Keep fallback models already in place
     } finally {
       loading.value = false
     }

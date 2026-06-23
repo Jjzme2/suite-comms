@@ -17,7 +17,7 @@ interface ToolChatMessage {
   role: 'user' | 'assistant'
   content: string
   toolUse?: { id: string; name: string; input: Record<string, unknown> }[]
-  toolResults?: { tool_use_id: string; content: string; is_error?: boolean }[]
+  toolResults?: { tool_use_id: string; name?: string; content: string; is_error?: boolean }[]
 }
 
 interface SuiteToolCall {
@@ -76,7 +76,7 @@ export function useAIChats() {
 export function useAIChatSession(chatId: MaybeRefOrGetter<string>) {
   const db = useFirestore()
   const user = useCurrentUser()
-  const { markModelUnavailable } = useAIModels()
+  const { models, markModelUnavailable } = useAIModels()
   const { executeTool } = useAISuiteTools()
 
   function messagesRef() {
@@ -96,16 +96,12 @@ export function useAIChatSession(chatId: MaybeRefOrGetter<string>) {
   const streamingContent = ref('')
   const error = ref<string | null>(null)
 
-  const isAnthropicModel = (modelId: string) =>
-    !modelId.startsWith('ollama:') &&
-    !modelId.startsWith('lmstudio:') &&
-    !modelId.startsWith('gemini:') &&
-    !modelId.startsWith('openrouter:')
-
   async function sendMessage(userText: string, modelId: string) {
     if (!user.value || !userText.trim()) return
 
     error.value = null
+
+    const useTools = models.value.find(m => m.id === modelId)?.supportsTools ?? false
 
     // Persist user message
     await addDoc(messagesRef(), {
@@ -134,20 +130,27 @@ export function useAIChatSession(chatId: MaybeRefOrGetter<string>) {
       for (let round = 0; round < MAX_ROUNDS; round++) {
         const res = await $fetch<ChatApiResponse>('/api/ai/chat', {
           method: 'POST',
-          body: { modelId, messages: currentMessages }
+          body: {
+            modelId,
+            messages: currentMessages,
+            useTools,
+            userContext: {
+              displayName: user.value?.displayName ?? undefined,
+              email: user.value?.email ?? undefined
+            }
+          }
         })
 
-        if (res.toolCalls?.length && isAnthropicModel(modelId)) {
-          // Show per-tool progress in the streaming bubble
+        if (res.toolCalls?.length) {
           const labels = res.toolCalls.map(tc => toolDisplayLabel(tc.name)).join(', ')
           streamingContent.value = `Using: ${labels}…`
 
-          const toolResults: { tool_use_id: string; content: string; is_error?: boolean }[] = []
+          const toolResults: { tool_use_id: string; name?: string; content: string; is_error?: boolean }[] = []
 
           for (const tc of res.toolCalls) {
-            const { result, isError } = await executeTool(tc.name, tc.input)
-            allToolCalls.push({ id: tc.id, name: tc.name, input: tc.input, result, isError })
-            toolResults.push({ tool_use_id: tc.id, content: result, ...(isError ? { is_error: true } : {}) })
+            const { result, isError, imageUrl } = await executeTool(tc.name, tc.input)
+            allToolCalls.push({ id: tc.id, name: tc.name, input: tc.input, result, isError, ...(imageUrl ? { imageUrl } : {}) })
+            toolResults.push({ tool_use_id: tc.id, name: tc.name, content: result, ...(isError ? { is_error: true } : {}) })
           }
 
           // Append the tool_use assistant turn + tool_result user turn for next call

@@ -36,6 +36,9 @@ export interface AIModel {
   contextLength?: number
   available?: boolean
   unavailableReason?: string
+  supportsTools?: boolean
+  supportsVision?: boolean
+  supportsImageGen?: boolean
 }
 
 export interface AIToolCall {
@@ -43,6 +46,7 @@ export interface AIToolCall {
   name: string
   input: Record<string, unknown>
   result?: string
+  imageUrl?: string
   isError?: boolean
 }
 

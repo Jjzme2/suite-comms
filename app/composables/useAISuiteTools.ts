@@ -1,6 +1,8 @@
 import {
   collection,
   addDoc,
+  updateDoc,
+  doc,
   getDocs,
   query,
   where,
@@ -11,15 +13,21 @@ import {
 export interface ToolResult {
   result: string
   isError: boolean
+  imageUrl?: string
 }
 
 const TOOL_LABELS: Record<string, string> = {
+  get_user_context: 'reading your data',
   list_pm_projects: 'list projects',
+  list_pm_tasks: 'list tasks',
   create_project: 'create project',
   create_task: 'create task',
+  create_note: 'create note',
+  update_task: 'update task',
   create_forum_thread: 'create forum thread',
   list_comms_channels: 'list channels',
-  create_channel: 'create channel'
+  create_channel: 'create channel',
+  generate_image: 'generate image'
 }
 
 export function toolDisplayLabel(name: string): string {
@@ -163,6 +171,106 @@ export function useAISuiteTools() {
             updatedAt: serverTimestamp()
           })
           return { result: `Channel "#${slug}" created (ID: ${docRef.id}).`, isError: false }
+        }
+
+        // ── Read: list PM tasks ─────────────────────────────────────────────
+        case 'list_pm_tasks': {
+          const { project_id: projectId, status: filterStatus } = input as {
+            project_id?: string
+            status?: string
+          }
+          const ref = collection(db, 'users', uid, 'pm_tasks')
+          const q = projectId
+            ? query(ref, where('projectId', '==', projectId))
+            : query(ref, orderBy('createdAt', 'desc'))
+          const snap = await getDocs(q)
+          if (snap.empty) return { result: 'No tasks found.', isError: false }
+          let taskDocs = snap.docs
+          if (filterStatus) taskDocs = taskDocs.filter(d => d.data().status === filterStatus)
+          const list = taskDocs.slice(0, 30).map(d => {
+            const data = d.data()
+            return `- ID: ${d.id}, Title: "${data.title}", Status: ${data.status}, Priority: ${data.priority}`
+          }).join('\n')
+          return { result: `Tasks:\n${list}`, isError: false }
+        }
+
+        // ── Write: create PM note ───────────────────────────────────────────
+        case 'create_note': {
+          const { title, content, project_id: projectId } = input as {
+            title: string
+            content: string
+            project_id?: string
+          }
+          const docRef = await addDoc(collection(db, 'users', uid, 'pm_notes'), {
+            title,
+            content,
+            projectId: projectId ?? null,
+            tags: [],
+            pinned: false,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          })
+          await emitActivity('note.created', `Created note "${title}" via AI`, { noteId: docRef.id })
+          return { result: `Note "${title}" created (ID: ${docRef.id}).`, isError: false }
+        }
+
+        // ── Write: update PM task ───────────────────────────────────────────
+        case 'update_task': {
+          const { task_id: taskId, status, priority, title: newTitle } = input as {
+            task_id: string
+            status?: string
+            priority?: string
+            title?: string
+          }
+          const updates: Record<string, unknown> = { updatedAt: serverTimestamp() }
+          if (status) updates.status = status
+          if (priority) updates.priority = priority
+          if (newTitle) updates.title = newTitle
+          await updateDoc(doc(db, 'users', uid, 'pm_tasks', taskId), updates)
+          if (status === 'done') {
+            await emitActivity('task.completed', `Completed a task via AI`, { taskId })
+          }
+          return { result: `Task updated successfully.`, isError: false }
+        }
+
+        // ── Read: user context summary ──────────────────────────────────────
+        case 'get_user_context': {
+          const [projectsSnap, tasksSnap] = await Promise.all([
+            getDocs(collection(db, 'users', uid, 'pm_projects')),
+            getDocs(collection(db, 'users', uid, 'pm_tasks'))
+          ])
+          const projectList = projectsSnap.docs
+            .map(d => `"${d.data().name}" (${d.data().status}, ID: ${d.id})`)
+            .join(', ') || 'none'
+          const tasksByStatus = tasksSnap.docs.reduce<Record<string, number>>((acc, d) => {
+            const s = d.data().status as string
+            acc[s] = (acc[s] ?? 0) + 1
+            return acc
+          }, {})
+          const taskSummary = Object.entries(tasksByStatus)
+            .map(([s, n]) => `${n} ${s}`)
+            .join(', ') || 'none'
+          const lines = [
+            `Name: ${user.value?.displayName || 'Unknown'}`,
+            `Email: ${user.value?.email || 'Unknown'}`,
+            `Projects (${projectsSnap.size}): ${projectList}`,
+            `Tasks: ${taskSummary}`
+          ]
+          return { result: lines.join('\n'), isError: false }
+        }
+
+        // ── Image generation ────────────────────────────────────────────────
+        case 'generate_image': {
+          const { prompt, size, quality } = input as {
+            prompt: string
+            size?: '1024x1024' | '1792x1024' | '1024x1792'
+            quality?: 'standard' | 'hd'
+          }
+          const res = await $fetch<{ imageUrl: string }>('/api/ai/generate-image', {
+            method: 'POST',
+            body: { prompt, size, quality }
+          })
+          return { result: `Image generated for: "${prompt}"`, isError: false, imageUrl: res.imageUrl }
         }
 
         default:

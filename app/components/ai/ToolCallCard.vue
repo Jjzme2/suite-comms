@@ -13,7 +13,8 @@ const TOOL_META: Record<string, { label: string; icon: string }> = {
   create_task: { label: 'Created task', icon: 'i-lucide-circle-plus' },
   create_forum_thread: { label: 'Created forum thread', icon: 'i-lucide-message-square-plus' },
   list_comms_channels: { label: 'Listed channels', icon: 'i-lucide-hash' },
-  create_channel: { label: 'Created channel', icon: 'i-lucide-plus-circle' }
+  create_channel: { label: 'Created channel', icon: 'i-lucide-plus-circle' },
+  generate_image: { label: 'Generated image', icon: 'i-lucide-image' }
 }
 
 const meta = computed(() => TOOL_META[props.toolCall.name] ?? { label: props.toolCall.name, icon: 'i-lucide-wrench' })
@@ -55,7 +56,10 @@ const succeeded = computed(() => hasResult.value && !props.toolCall.isError)
         <p class="text-[10px] uppercase tracking-wider text-zinc-400 mb-1.5">Input</p>
         <pre class="font-mono text-zinc-600 dark:text-zinc-300 whitespace-pre-wrap break-all leading-relaxed">{{ JSON.stringify(toolCall.input, null, 2) }}</pre>
       </div>
-      <div v-if="toolCall.result" class="px-3 py-2">
+      <div v-if="toolCall.imageUrl" class="px-3 py-2">
+        <img :src="toolCall.imageUrl" alt="Generated image" class="rounded-md max-w-full" />
+      </div>
+      <div v-else-if="toolCall.result" class="px-3 py-2">
         <p class="text-[10px] uppercase tracking-wider text-zinc-400 mb-1.5">Result</p>
         <p
           class="font-mono whitespace-pre-wrap leading-relaxed"

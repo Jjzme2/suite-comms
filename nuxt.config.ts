@@ -3,6 +3,7 @@ export default defineNuxtConfig({
     anthropicApiKey: process.env.ANTHROPIC_API_KEY || '',
     geminiApiKey: process.env.GEMINI_API_KEY || '',
     openRouterApiKey: process.env.OPENROUTER_API_KEY || '',
+    openaiApiKey: process.env.OPENAI_API_KEY || '',
     public: {
       hubUrl: process.env.NUXT_PUBLIC_HUB_URL || 'http://localhost:3000'
     }
