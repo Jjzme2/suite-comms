@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
+useSeoMeta({ title: 'Messages' })
 
 const { conversations } = useConversations()
 const showNewModal = ref(false)

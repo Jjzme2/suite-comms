@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
+useSeoMeta({ title: 'AI Chat' })
 
 const { chats, createChat, deleteChat } = useAIChats()
 const { models, fetchModels, modelIcon, modelIconColor } = useAIModels()

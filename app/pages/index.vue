@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
+useSeoMeta({ title: 'Home' })
 
 const user = useCurrentUser()
 const { conversations } = useConversations()

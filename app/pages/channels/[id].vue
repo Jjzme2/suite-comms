@@ -13,6 +13,7 @@ const showCreate = ref(false)
 const messagesEl = ref<HTMLElement>()
 
 const hasAI = computed(() => !!channel.value?.aiModel)
+useSeoMeta({ title: computed(() => channel.value?.name ? `#${channel.value.name}` : 'Channel') })
 
 async function handleSend(text: string) {
   stopTyping()

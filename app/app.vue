@@ -6,8 +6,13 @@ useHead({
 })
 
 useSeoMeta({
+  titleTemplate: '%s — ILYTAT Comms',
   title: 'ILYTAT Comms',
-  description: 'Messaging, AI chat, and project forums for the ILYTAT Suite'
+  description: 'Messaging, AI chat, and project forums for the ILYTAT Suite',
+  ogTitle: 'ILYTAT Comms',
+  ogDescription: 'Messaging, AI chat, and project forums for the ILYTAT Suite',
+  ogType: 'website',
+  twitterCard: 'summary'
 })
 </script>
 

@@ -13,6 +13,7 @@ const editingTitle = ref(false)
 const titleInput = ref('')
 
 const chat = computed(() => chats.value?.find(c => c.id === chatId.value))
+useSeoMeta({ title: computed(() => chat.value?.title ?? 'AI Chat') })
 const model = computed(() => models.value.find(m => m.id === chat.value?.modelId))
 const selectedModelId = ref(chat.value?.modelId ?? 'claude-sonnet-4-6')
 

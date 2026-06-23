@@ -17,6 +17,7 @@ const otherUid = computed(() => {
   return conversation.value?.participantIds.find(id => id !== uid) ?? ''
 })
 const otherName = computed(() => conversation.value?.participantNames[otherUid.value] || 'Conversation')
+useSeoMeta({ title: computed(() => otherName.value) })
 
 async function handleSend(text: string) {
   stopTyping()

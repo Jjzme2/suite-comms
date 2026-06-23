@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
+useSeoMeta({ title: 'Channels' })
 
 const { channels } = useChannels()
 const showCreate = ref(false)

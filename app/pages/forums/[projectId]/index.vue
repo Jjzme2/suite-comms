@@ -9,6 +9,7 @@ const { threads, createThread, pinThread, deleteThread } = useForumThreads(proje
 const toast = useToast()
 
 const project = computed(() => projects.value?.find(p => p.id === projectId.value))
+useSeoMeta({ title: computed(() => project.value?.name ?? 'Project Forum') })
 const showComposer = ref(false)
 </script>
 

@@ -20,6 +20,7 @@ const toast = useToast()
 
 const project = computed(() => projects.value?.find(p => p.id === projectId.value))
 const thread = computed(() => threads.value?.find(t => t.id === threadId.value))
+useSeoMeta({ title: computed(() => thread.value?.title ?? 'Discussion') })
 
 const replying = ref(false)
 const submitting = ref(false)

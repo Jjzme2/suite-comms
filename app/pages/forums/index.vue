@@ -1,5 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
+useSeoMeta({ title: 'Forums' })
 
 const { projects } = useProjects()
 const { threads } = useForumThreads()
