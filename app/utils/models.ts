@@ -1,3 +1,35 @@
+export function ollamaSupportsTools(name: string): boolean {
+  const n = name.toLowerCase()
+  return (
+    /llama3\.[1-9]/.test(n) ||
+    n.includes('llama3.3') ||
+    n.includes('mistral') ||
+    n.includes('mixtral') ||
+    n.includes('qwen2.5') ||
+    n.includes('qwen3') ||
+    n.includes('phi3') ||
+    n.includes('phi4') ||
+    n.includes('command-r') ||
+    n.includes('hermes') ||
+    n.includes('firefunction') ||
+    n.includes('nexusraven')
+  )
+}
+
+export function ollamaSupportsVision(name: string): boolean {
+  const n = name.toLowerCase()
+  return (
+    n.includes('llava') ||
+    n.includes('bakllava') ||
+    n.includes('minicpm-v') ||
+    n.includes('moondream') ||
+    n.includes('llama3.2-vision') ||
+    n.includes('vision') ||
+    n.includes('gemma3') ||
+    n.includes('phi3-vision')
+  )
+}
+
 export function formatModelId(modelId: string): string {
   if (!modelId) return 'AI'
 

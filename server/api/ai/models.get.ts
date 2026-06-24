@@ -1,37 +1,4 @@
 import type { AIModel } from '~/types'
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-function ollamaSupportsTools(name: string): boolean {
-  const n = name.toLowerCase()
-  return (
-    /llama3\.[1-9]/.test(n) ||
-    n.includes('llama3.3') ||
-    n.includes('mistral') ||
-    n.includes('mixtral') ||
-    n.includes('qwen2.5') ||
-    n.includes('qwen3') ||
-    n.includes('phi3') ||
-    n.includes('phi4') ||
-    n.includes('command-r') ||
-    n.includes('hermes') ||
-    n.includes('firefunction') ||
-    n.includes('nexusraven')
-  )
-}
-
-function ollamaSupportsVision(name: string): boolean {
-  const n = name.toLowerCase()
-  return (
-    n.includes('llava') ||
-    n.includes('bakllava') ||
-    n.includes('minicpm-v') ||
-    n.includes('moondream') ||
-    n.includes('llama3.2-vision') ||
-    n.includes('vision') ||
-    n.includes('gemma3') ||
-    n.includes('phi3-vision')
-  )
-}
 
 // ── Handler ──────────────────────────────────────────────────────────────────
 
@@ -163,53 +130,6 @@ export default defineEventHandler(async () => {
     } catch (err) {
       log.warn('OpenRouter model fetch failed', { error: String(err) })
     }
-  }
-
-  // ── Ollama — dynamic, only when running ──────────────────────────────────
-  try {
-    const res = await $fetch<{ models: { name: string; details?: { families?: string[] } }[] }>(
-      'http://localhost:11434/api/tags',
-      { timeout: 2000 }
-    )
-    for (const m of res.models ?? []) {
-      models.push({
-        id: `ollama:${m.name}`,
-        name: m.name,
-        provider: 'ollama',
-        hosting: 'local',
-        description: 'Local model via Ollama',
-        available: true,
-        supportsTools: ollamaSupportsTools(m.name),
-        supportsVision: ollamaSupportsVision(m.name)
-      })
-    }
-    log.info('Ollama models fetched', { count: res.models?.length ?? 0 })
-  } catch {
-    // Ollama not running — silent
-  }
-
-  // ── LM Studio — dynamic, only when running ────────────────────────────────
-  try {
-    const res = await $fetch<{ data: { id: string }[] }>(
-      'http://localhost:1234/v1/models',
-      { timeout: 2000 }
-    )
-    for (const m of res.data ?? []) {
-      models.push({
-        id: `lmstudio:${m.id}`,
-        name: m.id,
-        provider: 'lmstudio',
-        hosting: 'local-cloud',
-        description: 'Model via LM Studio',
-        available: true,
-        // LM Studio doesn't expose capability metadata — assume tools if name matches known patterns
-        supportsTools: ollamaSupportsTools(m.id),
-        supportsVision: ollamaSupportsVision(m.id)
-      })
-    }
-    log.info('LM Studio models fetched', { count: res.data?.length ?? 0 })
-  } catch {
-    // LM Studio not running — silent
   }
 
   log.info('Model list assembled', { total: models.length })

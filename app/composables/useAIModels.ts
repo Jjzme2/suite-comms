@@ -64,16 +64,65 @@ const loading = ref(false)
 const runtimeUnavailable = reactive<Record<string, string>>({})
 
 export function useAIModels() {
+  async function fetchLocalModels(): Promise<AIModel[]> {
+    const local: AIModel[] = []
+
+    try {
+      const res = await $fetch<{ models: { name: string }[] }>(
+        'http://localhost:11434/api/tags',
+        { timeout: 2000 }
+      )
+      for (const m of res.models ?? []) {
+        local.push({
+          id: `ollama:${m.name}`,
+          name: m.name,
+          provider: 'ollama',
+          hosting: 'local',
+          description: 'Local model via Ollama',
+          available: true,
+          supportsTools: ollamaSupportsTools(m.name),
+          supportsVision: ollamaSupportsVision(m.name)
+        })
+      }
+    } catch {}
+
+    try {
+      const res = await $fetch<{ data: { id: string }[] }>(
+        'http://localhost:1234/v1/models',
+        { timeout: 2000 }
+      )
+      for (const m of res.data ?? []) {
+        local.push({
+          id: `lmstudio:${m.id}`,
+          name: m.id,
+          provider: 'lmstudio',
+          hosting: 'local-cloud',
+          description: 'Model via LM Studio',
+          available: true,
+          supportsTools: ollamaSupportsTools(m.id),
+          supportsVision: ollamaSupportsVision(m.id)
+        })
+      }
+    } catch {}
+
+    return local
+  }
+
   async function fetchModels() {
     loading.value = true
-    try {
-      const discovered = await $fetch<AIModel[]>('/api/ai/models')
-      models.value = discovered
-    } catch {
-      // Keep fallback models already in place
-    } finally {
-      loading.value = false
+    const [cloudResult, localResult] = await Promise.allSettled([
+      $fetch<AIModel[]>('/api/ai/models'),
+      fetchLocalModels()
+    ])
+    const cloud = cloudResult.status === 'fulfilled' ? cloudResult.value : null
+    const local = localResult.status === 'fulfilled' ? localResult.value : []
+    if (cloud !== null) {
+      models.value = [...cloud, ...local]
+    } else if (local.length) {
+      const existingIds = new Set(models.value.map(m => m.id))
+      models.value.push(...local.filter(m => !existingIds.has(m.id)))
     }
+    loading.value = false
   }
 
   function markModelUnavailable(modelId: string, reason: string) {
