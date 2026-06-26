@@ -3,6 +3,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 const { projects } = useProjects()
 const { channels } = useChannels()
+const sidebar = useSidebar()
 
 const navItems = [
   { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '/' },
@@ -21,7 +22,16 @@ const showCreate = ref(false)
 </script>
 
 <template>
-  <aside class="w-60 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col h-full">
+  <aside
+    :class="[
+      'fixed inset-y-0 left-0 z-40 w-60 h-full shrink-0',
+      'bg-white dark:bg-zinc-900 flex flex-col',
+      'border-r border-zinc-200 dark:border-zinc-800',
+      'transition-transform duration-300 ease-in-out',
+      'lg:static lg:z-auto lg:translate-x-0',
+      sidebar.isOpen.value ? 'translate-x-0' : '-translate-x-full'
+    ]"
+  >
     <!-- Logo -->
     <div class="h-14 flex items-center px-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
       <NuxtLink to="/" class="flex items-center gap-2.5">

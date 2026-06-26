@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const authStore = useAuthStore()
 const colorMode = useColorMode()
+const sidebar = useSidebar()
 
 const toggleDark = () => {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
@@ -8,12 +9,23 @@ const toggleDark = () => {
 </script>
 
 <template>
-  <header class="h-14 flex items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
-    <div class="flex items-center gap-2 min-w-0">
+  <header class="h-14 flex items-center px-4 gap-2 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shrink-0">
+    <!-- Hamburger (mobile only) -->
+    <UButton
+      class="lg:hidden shrink-0"
+      icon="i-lucide-menu"
+      color="neutral"
+      variant="ghost"
+      size="sm"
+      aria-label="Open menu"
+      @click="sidebar.toggle()"
+    />
+
+    <div class="flex items-center gap-2 min-w-0 flex-1">
       <slot name="title" />
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 shrink-0">
       <UButton
         :icon="colorMode.value === 'dark' ? 'i-lucide-sun' : 'i-lucide-moon'"
         variant="ghost"
